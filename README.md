@@ -390,7 +390,7 @@ Be sure to replace the VERSION with the actual version in the name of the RAR.
 
 g. Configure the ActivationConfigProperty and ResourceAdapter in the MDB code as follows:
 
-'''java
+'''javascript 
 ​@MessageDriven( name="WebSphereMQMDB", 
 ​    activationConfig =
 ​    {
