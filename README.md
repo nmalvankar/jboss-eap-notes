@@ -139,13 +139,18 @@ Handshake with Vault complete
 
 ### Non - Interactive command:
 You may use the below command to add passwords to the vault.
+```
 ./vault.sh -b <vault block> -a <attribute name> -s <salt> -i <iterations> -k <keystore url> -x <sensitive string value> -p <keystore password> -e <directory of the vault keystore>
+```
 
 Or 
 
+```
 ./vault.sh --keystore EAP_HOME/vault/vault.keystore --keystore-password vault22 --alias vault --vault-block vb --attribute password --sec-attr 0penS3sam3 --enc-dir EAP_HOME/vault/ --iteration 120 --salt 1234abcd
+```
 
 For more details use the following command
+```
 ./vault.sh --help.
 
 usage: vault.sh <empty> |  [-a <arg>] [-b <arg>] -c | -h | -x <arg> [-e
@@ -161,17 +166,22 @@ usage: vault.sh <empty> |  [-a <arg>] [-b <arg>] -c | -h | -x <arg> [-e
  -s,--salt <arg>                   8 character salt
  -v,--alias <arg>                 Vault keystore alias
  -x,--sec-attr <arg>            Secured attribute value (such as password) to store
+```
 
 Here is an example:
+```
 ./vault.sh -s 12345678 -i 50 -k /opt/jboss/security/vault/vault.keystore -p password –v vault -b dataSource –a dataSourceA -x secret -e /opt/jboss/security/vault/
+```
 
 ### Note: Ensure that the path of the vault directory in the argument –e has an ending '/'.
 
 ### Configure JBoss EAP to use vault
-Use the below CLI command to add the vault configuration 
+Use the below CLI command to add the vault configuration
+``` 
 /core-service=vault:add(vault-options={"KEYSTORE_URL" => "/opt/vault/vault.keystore","KEYSTORE_PASSWORD" => "MASK-3y28rCZlcKR","KEYSTORE_ALIAS" => "vault","SALT" => "12438567","ITERATION_COUNT" => "50","ENC_FILE_DIR" => "/opt/vault/"}
-
+```
 This will result in the following entries in the standalone configuration
+```
 ...
    <vault>
       <vault-option name="KEYSTORE_URL" value="/opt/vault/vault.keystore"/>
@@ -183,11 +193,12 @@ This will result in the following entries in the standalone configuration
     </vault>
     <management>
     ...
-
+```
 The following string can be used in configurations to provide an encrypted password. It should be wrapped with '${' and '}' to denote the string as a variable.
 VAULT::ds_ExampleDS::password_name::1
 
-Refer to the below example 
+Refer to the below example
+``` 
 <subsystem xmlns="urn:jboss:domain:datasources:1.0">
     <datasources>
       <datasource jndi-name="java:jboss/datasources/ExampleDS" enabled="true" use-java-context="true" pool-name="H2DS">
@@ -197,6 +208,7 @@ Refer to the below example
             <password>${VAULT::ds_ExampleDS::password_name::1}</password>
         </security>
          ...
+```
          
  # IBM MQ in Jboss eap 6.3
  ###  Prerequisites
@@ -226,16 +238,20 @@ Be sure to replace the VERSION with the correct version number.
 a. Open the EAP_HOME/standalone/configuration/standalone-full-ha.xml file in an editor.
 b. Find the urn:jboss:domain:resource-adapters subsystem in the configuration file.
 c. If there are no resource adapters defined for this subsystem, first replace:
+```
 <subsystem xmlns="urn:jboss:domain:resource-adapters:1.1"/>
+```
 With this
-​<subsystem xmlns="urn:jboss:domain:resource-adapters:1.1">
+​```
+<subsystem xmlns="urn:jboss:domain:resource-adapters:1.1">
 ​    <resource-adapters>
 ​        <!-- <resource-adapter> configuration listed below -->
 ​    </resource-adapters>
 ​</subsystem>
-
+```
 d. The resource adapter configuration depends on whether you need transaction support and recovery. If you do not need transaction support, choose the first configuration step below. If you do need transaction support, choose the second configuration step.
 A. For non-transactional deployments (if you don't want the resource adapter to do the transaction management for the application), replace the <!-- <resource-adapter> configuration listed below --> with the following:
+```
 <resource-adapter>
 ​    <archive>
 ​        wmq.jmsra-VERSION.rar
@@ -289,11 +305,11 @@ A. For non-transactional deployments (if you don't want the resource adapter to 
 ​      </admin-object>
 ​    </admin-objects>
 ​</resource-adapter>
-
+```
 
 B. For transactional deployments(if you want the resource adapter to do the transaction management for the application), replace the <!-- <resource-adapter> configuration listed below --> with the following:
 
-
+```
 <resource-adapter>
 ​    <archive>
 ​        wmq.jmsra-VERSION.rar
@@ -353,10 +369,11 @@ B. For transactional deployments(if you want the resource adapter to do the tran
 ​        </admin-object>
 ​    </admin-objects>
 ​</resource-adapter>
+```
 Be sure to replace the VERSION with the actual version in the name of the RAR. You must also replace the USER_NAME and PASSWORD with the valid user name and password.
 
 e. If you don't want to pass RFH2 header in the messages exchanged with MQ broker, add the config-property "targetClient" with value "MQ" in the admin object. Below is an example.
-
+```
 <admin-object 
                 class-name="com.ibm.mq.connector.outbound.MQQueueProxy" 
                 jndi-name="java:jboss/MQ.QUEUE.NAME" 
@@ -371,21 +388,22 @@ e. If you don't want to pass RFH2 header in the messages exchanged with MQ broke
                 MQ
             </config-property>
 </admin-object>
-
+```
 f. If you want to change the default provider for the EJB3 messaging system in JBoss EAP 6 from HornetQ to WebSphere MQ, modify the urn:jboss:domain:ejb3:1.2 subsystem as follows:
 Replace:
-
+```
 ​<mdb>
 ​    <resource-adapter-ref resource-adapter-name="hornetq-ra"/>
 ​    <bean-instance-pool-ref pool-name="mdb-strict-max-pool"/>
 ​</mdb>
-
+```
    With
-
+```
 ​<mdb>
 ​    <resource-adapter-ref resource-adapter-name="wmq.jmsra-VERSION.rar"/>
 ​    <bean-instance-pool-ref pool-name="mdb-strict-max-pool"/>
 ​</mdb>
+```
 Be sure to replace the VERSION with the actual version in the name of the RAR.
 
 g. Configure the ActivationConfigProperty and ResourceAdapter in the MDB code as follows:
