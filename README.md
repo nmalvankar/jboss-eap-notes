@@ -389,6 +389,8 @@ Replace:
 Be sure to replace the VERSION with the actual version in the name of the RAR.
 
 g. Configure the ActivationConfigProperty and ResourceAdapter in the MDB code as follows:
+
+'''java
 ​@MessageDriven( name="WebSphereMQMDB", 
 ​    activationConfig =
 ​    {
@@ -405,4 +407,5 @@ g. Configure the ActivationConfigProperty and ResourceAdapter in the MDB code as
 ​@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 ​public class WebSphereMQMDB implements MessageListener {
 ​}
+'''
 Be sure to replace the VERSION with the actual version in the name of the RAR.         
