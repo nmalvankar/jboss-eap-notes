@@ -166,3 +166,243 @@ Here is an example:
 ./vault.sh -s 12345678 -i 50 -k /opt/jboss/security/vault/vault.keystore -p password –v vault -b dataSource –a dataSourceA -x secret -e /opt/jboss/security/vault/
 
 ### Note: Ensure that the path of the vault directory in the argument –e has an ending '/'.
+
+### Configure JBoss EAP to use vault
+Use the below CLI command to add the vault configuration 
+/core-service=vault:add(vault-options={"KEYSTORE_URL" => "/opt/vault/vault.keystore","KEYSTORE_PASSWORD" => "MASK-3y28rCZlcKR","KEYSTORE_ALIAS" => "vault","SALT" => "12438567","ITERATION_COUNT" => "50","ENC_FILE_DIR" => "/opt/vault/"}
+
+This will result in the following entries in the standalone configuration
+...
+   <vault>
+      <vault-option name="KEYSTORE_URL" value="/opt/vault/vault.keystore"/>
+      <vault-option name="KEYSTORE_PASSWORD" value="MASK-3y28rCZlcKR"/>
+      <vault-option name="KEYSTORE_ALIAS" value="vault"/>
+      <vault-option name="SALT" value="12438567"/>
+      <vault-option name="ITERATION_COUNT" value="50"/>
+      <vault-option name="ENC_FILE_DIR" value="/opt/vault/"/>
+    </vault>
+    <management>
+    ...
+
+The following string can be used in configurations to provide an encrypted password. It should be wrapped with '${' and '}' to denote the string as a variable.
+VAULT::ds_ExampleDS::password_name::1
+
+Refer to the below example 
+<subsystem xmlns="urn:jboss:domain:datasources:1.0">
+    <datasources>
+      <datasource jndi-name="java:jboss/datasources/ExampleDS" enabled="true" use-java-context="true" pool-name="H2DS">
+       ...
+        <security>
+          <user-name>sa</user-name>
+            <password>${VAULT::ds_ExampleDS::password_name::1}</password>
+        </security>
+         ...
+         
+ # IBM MQ in Jboss eap 6.3
+ ###  Prerequisites
+Before you get started, you must verify the version of the WebSphere MQ resource adapter and understand some of the WebSphere MQ configuration properties.
+
+The WebSphere MQ resource adapter is supplied as a Resource Archive (RAR) file called wmq.jmsra-VERSION.rar. You must use version 7.5.0.0 and higher.
+
+You must know the values of the following WebSphere MQ configuration properties. Refer to the WebSphere MQ product documentation for details about these properties.
+MQ.QUEUE.MANAGER: The name of the WebSphere MQ queue manager
+MQ.HOST.NAME: The host name used to connect to the WebSphere MQ queue manager
+MQ.CHANNEL.NAME: The server channel used to connect to the WebSphere MQ queue manager
+MQ.QUEUE.NAME: The name of the destination queue
+MQ.TOPIC.NAME: The name of the destination topic
+MQ.PORT: The port used to connect to the WebSphere MQ queue manager
+MQ.CLIENT: The transport type
+
+For outbound connections, you must also be familiar with the following configuration property:
+MQ.CONNECTIONFACTORY.NAME: The name of the connection factory instance that will provide the connection to the remote system
+###  Configure & deploy resource adapter
+1. If you need transaction support with the WebSphereMQ resource adapter, you must repackage the wmq.jmsra-VERSION.rar archive to include the mqetclient.jar. You can use the following command:
+[user@host ~]$ jar -uf wmq.jmsra-VERSION.rar mqetclient.jar
+Be sure to replace the VERSION with the correct version number.
+
+2. Copy the wmq.jmsra-VERSION.rar file to the EAP_HOME/standalone/deployments/ directory.
+
+3. Add the resource adapter to the server configuration file.
+a. Open the EAP_HOME/standalone/configuration/standalone-full-ha.xml file in an editor.
+b. Find the urn:jboss:domain:resource-adapters subsystem in the configuration file.
+c. If there are no resource adapters defined for this subsystem, first replace:
+<subsystem xmlns="urn:jboss:domain:resource-adapters:1.1"/>
+With this
+​<subsystem xmlns="urn:jboss:domain:resource-adapters:1.1">
+​    <resource-adapters>
+​        <!-- <resource-adapter> configuration listed below -->
+​    </resource-adapters>
+​</subsystem>
+
+d. The resource adapter configuration depends on whether you need transaction support and recovery. If you do not need transaction support, choose the first configuration step below. If you do need transaction support, choose the second configuration step.
+A. For non-transactional deployments (if you don't want the resource adapter to do the transaction management for the application), replace the <!-- <resource-adapter> configuration listed below --> with the following:
+<resource-adapter>
+​    <archive>
+​        wmq.jmsra-VERSION.rar
+​    </archive>
+​    <transaction-support>NoTransaction</transaction-support>
+​    <connection-definitions>
+​        <connection-definition 
+​                class-name="com.ibm.mq.connector.outbound.ManagedConnectionFactoryImpl" 
+​                jndi-name="java:jboss/MQ.CONNECTIONFACTORY.NAME" 
+​                pool-name="MQ.CONNECTIONFACTORY.NAME">
+​            <config-property name="hostName">
+​                MQ.HOST.NAME
+​            </config-property>
+​            <config-property name="port">
+​                MQ.PORT
+​            </config-property>
+​            <config-property name="channel">
+​                MQ.CHANNEL.NAME
+​            </config-property>
+​            <config-property name="transportType">
+​                MQ.CLIENT
+​            </config-property>
+​            <config-property name="queueManager">
+​                MQ.QUEUE.MANAGER
+​            </config-property>
+​            <security>
+​                <security-domain>MySecurityDomain</security-domain>
+​            </security>
+​       </connection-definition>
+​    </connection-definitions>
+​    <admin-objects>
+​        <admin-object 
+​                class-name="com.ibm.mq.connector.outbound.MQQueueProxy" 
+​                jndi-name="java:jboss/MQ.QUEUE.NAME" 
+​                pool-name="MQ.QUEUE.NAME">
+​            <config-property name="baseQueueName">
+​                MQ.QUEUE.NAME
+​            </config-property>
+​            <config-property name="baseQueueManagerName">
+​                MQ.QUEUE.MANAGER
+​            </config-property>
+​       <admin-object class-name="com.ibm.mq.connector.outbound.MQTopicProxy"
+​                jndi-name="java:jboss/MQ.TOPIC.NAME" pool-name="MQ.TOPIC.NAME">
+​            <config-property name="baseTopicName">
+​                MQ.TOPIC.NAME
+​            </config-property>
+​            <config-property name="brokerPubQueueManager">
+​                MQ.QUEUE.MANAGER
+​            </config-property>
+​       </admin-object>
+​      </admin-object>
+​    </admin-objects>
+​</resource-adapter>
+
+
+B. For transactional deployments(if you want the resource adapter to do the transaction management for the application), replace the <!-- <resource-adapter> configuration listed below --> with the following:
+
+
+<resource-adapter>
+​    <archive>
+​        wmq.jmsra-VERSION.rar
+​    </archive>
+​    <transaction-support>XATransaction</transaction-support>
+​    <connection-definitions>
+​        <connection-definition 
+​                class-name="com.ibm.mq.connector.outbound.ManagedConnectionFactoryImpl" 
+​                jndi-name="java:jboss/MQ.CONNECTIONFACTORY.NAME" 
+​                pool-name="MQ.CONNECTIONFACTORY.NAME">
+​            <config-property name="hostName">
+​                MQ.HOST.NAME
+​            </config-property>
+​            <config-property name="port">
+​                MQ.PORT
+​            </config-property>
+​            <config-property name="channel">
+​                MQ.CHANNEL.NAME
+​            </config-property>
+​            <config-property name="transportType">
+​                MQ.CLIENT
+​            </config-property>
+​            <config-property name="queueManager">
+​                MQ.QUEUE.MANAGER
+​            </config-property>
+​           <security>
+​                <security-domain>MySecurityDomain</security-domain>
+​            </security>
+​            <recovery>
+​                <recover-credential>
+​                    <user-name>USER_NAME</user-name>
+​                    <password>PASSWORD</password>
+​                </recover-credential>
+​            </recovery>
+​        </connection-definition>
+​    </connection-definitions>
+​    <admin-objects>
+​        <admin-object 
+​                class-name="com.ibm.mq.connector.outbound.MQQueueProxy" 
+​                jndi-name="java:jboss/MQ.QUEUE.NAME" 
+​                pool-name="MQ.QUEUE.NAME">
+​            <config-property name="baseQueueName">
+​                MQ.QUEUE.NAME
+​            </config-property>
+​            <config-property name="baseQueueManagerName">
+​                MQ.QUEUE.MANAGER
+​            </config-property>
+​        </admin-object>
+​        <admin-object class-name="com.ibm.mq.connector.outbound.MQTopicProxy"
+​                jndi-name="java:jboss/MQ.TOPIC.NAME" pool-name="MQ.TOPIC.NAME">
+​            <config-property name="baseTopicName">
+​                MQ.TOPIC.NAME
+​            </config-property>
+​            <config-property name="brokerPubQueueManager">
+​                MQ.QUEUE.MANAGER
+​            </config-property>
+​        </admin-object>
+​    </admin-objects>
+​</resource-adapter>
+Be sure to replace the VERSION with the actual version in the name of the RAR. You must also replace the USER_NAME and PASSWORD with the valid user name and password.
+
+e. If you don't want to pass RFH2 header in the messages exchanged with MQ broker, add the config-property "targetClient" with value "MQ" in the admin object. Below is an example.
+
+<admin-object 
+                class-name="com.ibm.mq.connector.outbound.MQQueueProxy" 
+                jndi-name="java:jboss/MQ.QUEUE.NAME" 
+                pool-name="MQ.QUEUE.NAME">
+            <config-property name="baseQueueName">
+                MQ.QUEUE.NAME
+            </config-property>
+            <config-property name="baseQueueManagerName">
+                MQ.QUEUE.MANAGER
+            </config-property>
+            <config-property name="targetClient">
+                MQ
+            </config-property>
+</admin-object>
+
+f. If you want to change the default provider for the EJB3 messaging system in JBoss EAP 6 from HornetQ to WebSphere MQ, modify the urn:jboss:domain:ejb3:1.2 subsystem as follows:
+Replace:
+
+​<mdb>
+​    <resource-adapter-ref resource-adapter-name="hornetq-ra"/>
+​    <bean-instance-pool-ref pool-name="mdb-strict-max-pool"/>
+​</mdb>
+
+   With
+
+​<mdb>
+​    <resource-adapter-ref resource-adapter-name="wmq.jmsra-VERSION.rar"/>
+​    <bean-instance-pool-ref pool-name="mdb-strict-max-pool"/>
+​</mdb>
+Be sure to replace the VERSION with the actual version in the name of the RAR.
+
+g. Configure the ActivationConfigProperty and ResourceAdapter in the MDB code as follows:
+​@MessageDriven( name="WebSphereMQMDB", 
+​    activationConfig =
+​    {
+​        @ActivationConfigProperty(propertyName = "destinationType",propertyValue = "javax.jms.Queue"),
+​        @ActivationConfigProperty(propertyName = "useJNDI", propertyValue = "false"),
+​        @ActivationConfigProperty(propertyName = "hostName", propertyValue = "MQ.HOST.NAME"),
+​        @ActivationConfigProperty(propertyName = "port", propertyValue = "MQ.PORT"),
+​        @ActivationConfigProperty(propertyName = "channel", propertyValue = "MQ.CHANNEL.NAME"),
+​        @ActivationConfigProperty(propertyName = "queueManager", propertyValue = "MQ.QUEUE.MANAGER"),
+​        @ActivationConfigProperty(propertyName = "destination", propertyValue = "MQ.QUEUE.NAME"),
+​        @ActivationConfigProperty(propertyName = "transportType", propertyValue = "MQ.CLIENT")
+​    })
+​    @ResourceAdapter(value = "wmq.jmsra-VERSION.rar")
+​@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+​public class WebSphereMQMDB implements MessageListener {
+​}
+Be sure to replace the VERSION with the actual version in the name of the RAR.         
