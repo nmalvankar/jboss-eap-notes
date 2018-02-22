@@ -16,6 +16,7 @@ Now that the RHAMT CLI is installed, you can run the CLI to analyze your web app
 2. Run the CLI with the necessary options.
    a. Navigate into the rhamt-cli-4.0.0.Final/bin/ directory.
    b. Execute the CLI with the necessary options.
+   ```
       $ ./rhamt-cli --input /path/to/simple-sample-app.ear --output /path/to/output/ --source websphere --target eap6 --packages com.td
       This command uses the following options:
       --input: Path to the application to analyze.
@@ -23,6 +24,7 @@ Now that the RHAMT CLI is installed, you can run the CLI to analyze your web app
       --source: Source technology of the application.
       --target: Target technology for the application migration.
       --packages: List of packages to evaluate.
+    ```
 3. Open the generated report.
    a. The location of the report is displayed in your terminal once the execution is complete.
       Report created: /path/to/output/  
@@ -63,6 +65,7 @@ A file named vault.keystore is created in the /opt/jboss/security/vault/ directo
 You can use the interactive session or use non-interactive commands to setup vault.
 
 ### Interactive session:
+```
   /bin $ ./vault.sh 
   =========================================================================
 
@@ -88,14 +91,17 @@ Enter Keystore password again:
 Values match
 Enter 8 character salt:12345678
 Enter iteration count as a number (Eg: 44):50
+```
 
 Make note of the following:
+```
 ********************************************
 Masked Password:MASK-5WNXs8oEbrs
 salt:12345678
 Iteration Count:50
 ********************************************
-
+```
+```
 Enter Keystore Alias:vault
 Jan 01, 2017 11:48:39 AM org.jboss.security.vault.SecurityVaultFactory get
 INFO: Getting Security Vault with implementation of org.picketbox.plugins.vault.PicketBoxSecurityVault
@@ -136,6 +142,7 @@ Vault Configuration in AS7 config file:
 ********************************************
 Vault is initialized and ready for use
 Handshake with Vault complete
+```
 
 ### Non - Interactive command:
 You may use the below command to add passwords to the vault.
@@ -210,7 +217,8 @@ Refer to the below example
          ...
 ```
          
- # IBM MQ in Jboss eap 6.3
+ # IBM MQ in Jboss eap 6.x
+ 
  ###  Prerequisites
 Before you get started, you must verify the version of the WebSphere MQ resource adapter and understand some of the WebSphere MQ configuration properties.
 
@@ -241,15 +249,19 @@ c. If there are no resource adapters defined for this subsystem, first replace:
 ```
 <subsystem xmlns="urn:jboss:domain:resource-adapters:1.1"/>
 ```
+
 With this
-​```
+​
+```
 <subsystem xmlns="urn:jboss:domain:resource-adapters:1.1">
 ​    <resource-adapters>
 ​        <!-- <resource-adapter> configuration listed below -->
 ​    </resource-adapters>
 ​</subsystem>
 ```
+
 d. The resource adapter configuration depends on whether you need transaction support and recovery. If you do not need transaction support, choose the first configuration step below. If you do need transaction support, choose the second configuration step.
+
 A. For non-transactional deployments (if you don't want the resource adapter to do the transaction management for the application), replace the <!-- <resource-adapter> configuration listed below --> with the following:
 ```
 <resource-adapter>
@@ -397,7 +409,9 @@ Replace:
 ​    <bean-instance-pool-ref pool-name="mdb-strict-max-pool"/>
 ​</mdb>
 ```
+
    With
+
 ```
 ​<mdb>
 ​    <resource-adapter-ref resource-adapter-name="wmq.jmsra-VERSION.rar"/>
