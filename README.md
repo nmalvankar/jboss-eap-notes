@@ -443,7 +443,7 @@ g. Configure the ActivationConfigProperty and ResourceAdapter in the MDB code as
 Be sure to replace the VERSION with the actual version in the name of the RAR.         
 
 
-Enable trace level logging for JBoss EAP 6 Management Console login
+### Enable trace level logging for JBoss EAP 6 Management Console login
 
             <logger category="org.jboss.security">
             <level name="TRACE"/>   
