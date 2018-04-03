@@ -441,3 +441,25 @@ g. Configure the ActivationConfigProperty and ResourceAdapter in the MDB code as
 ​}
 ```
 Be sure to replace the VERSION with the actual version in the name of the RAR.         
+
+
+Enable trace level logging for JBoss EAP 6 Management Console login
+
+            <logger category="org.jboss.security">
+            <level name="TRACE"/>   
+           </logger>
+           <logger category="org.jboss.web.tomcat.security">    
+            <level name="TRACE"/>   
+           </logger>
+           <logger category="org.apache.catalina">   
+           <level name="TRACE"/>   
+              </logger>
+              <logger category="org.jboss.as.domain.management">   
+                <level name=TRACE/>
+          </logger>
+          <logger category="org.picketbox"> 
+            <level name=TRACE/>
+           </logger>
+           <logger category="javax.security">  
+             <level name=TRACE/>
+            </logger>
