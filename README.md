@@ -466,3 +466,6 @@ Be sure to replace the VERSION with the actual version in the name of the RAR.
 
 ### Standalone vs Domain Mode
 https://access.redhat.com/solutions/237813
+
+### JBoss EAP 7 Clustering
+https://access.redhat.com/documentation/en-us/reference_architectures/2017/pdf/configuring_a_red_hat_jboss_eap_7_cluster/Reference_Architectures-2017-Configuring_a_Red_Hat_JBoss_EAP_7_Cluster-en-US.pdf
