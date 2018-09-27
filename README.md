@@ -464,5 +464,5 @@ Be sure to replace the VERSION with the actual version in the name of the RAR.
              <level name=TRACE/>
             </logger>
 
-###Standalone vs Domain Mode
+### Standalone vs Domain Mode
 https://access.redhat.com/solutions/237813
